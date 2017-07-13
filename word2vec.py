@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import mytrain
+from mydata import InputData
+from model import SkipGramModel
 
 import argparse
 
@@ -11,9 +14,21 @@ parser.add_argument('-batch-size', type=int, default=100)
 parser.add_argument('-embed-dim', type=int, default=100)
 parser.add_argument('-using-hs', action='store_true', default=False)
 
+parser.add_argument('-dir', type=str, default='./data')
 parser.add_argument('-no-cuda', action='store_true')
 parser.add_argument('-test', action='store_true', default=False)
 args = parser.parse_args()
+
+# data
+data = InputData('zhihu.txt', args)
+output_file_name = 'result.txt'
+
+# update args
+args.emb_size = len(data.word2id)
+
+# do
+skip_gram_model = SkipGramModel(args)
+mytrain.train(data, skip_gram_model, args)
 
 
 
