@@ -3,6 +3,8 @@ import os
 import numpy
 from collections import deque
 
+numpy.random.seed(12345)
+
 
 class InputData:
     def __init__(self, file_name, args):
@@ -21,11 +23,11 @@ class InputData:
         self.id2word = {}
         # 词频率
         self.word_frequency = {}
-        # 去重去低频次之后单词个数
+        # 去重 去低频次 之后单词个数
         self.word_count = 0
         self.input_file = open(os.path.join(self.args.dir, file_name), encoding='utf-8').readlines()
 
-        self.get_words(self.args.min_count)
+        self.get_words()
         self.init_sample_table()
 
         if args.using_hs:
@@ -70,14 +72,41 @@ class InputData:
             self.sample_table += [wid] * int(c)
         self.sample_table = numpy.array(self.sample_table)
 
-# vip ???
+# vip ???这里的采样，是把窗口里的所有情况都采咯
     def get_batch_pairs(self):
         while len(self.word_pair_catch) < self.args.batch_size:
-            print('实际上一次采样就足够一次epoch，看看输出了几次')
-            for _ in range(10000):
-                sentence = self.input
+            print('实际上一次采样就足够一次epoch，看看输出了几次???')
+            for sentence in self.input_file:
+                if sentence is None or sentence == '':
+                    continue
+                word_ids = []
+                for word in sentence.strip().split(' '):
+                    try:
+                        word_ids.append(self.word2id[word])
+                    except:
+                        continue
+                for i, u in enumerate(word_ids):
+                    for j, v in enumerate(word_ids[
+                                max(i - self.args.window_size, 0): min(
+                                (i + self.args.window_size), len(word_ids))]):
+                        assert u < self.word_count
+                        assert v < self.word_count
+                        if i == j:
+                            continue
+                        self.word_pair_catch.append((u, v))
+        batch_pairs = []
+        for _ in range(self.args.batch_size):
+            batch_pairs.append(self.word_pair_catch.popleft())
+        return batch_pairs
 
+# vip ???negative sampling
+    def get_pairs_by_neg_sampling(self, pos_word_pair):
+        neg_word_pair = []
 
+        for pair in pos_word_pair:
+            neg_v = numpy.random.choice(self.sample_table, size=self.args.neg_count)
+            neg_word_pair += zip([pair[0]] * self.args.neg_count, neg_v)
+        return pos_word_pair, neg_word_pair
 
 # doubt
     def evaluate_pair_count(self, window_size):

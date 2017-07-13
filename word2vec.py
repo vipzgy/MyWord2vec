@@ -10,8 +10,9 @@ parser.add_argument('-lr', type=float, default=0.025)
 parser.add_argument('-epochs', type=int, default=5)
 parser.add_argument('-window-size', type=int, default=5)
 parser.add_argument('-min-count', type=int, default=5)
+parser.add_argument('-neg-count', type=int, default=5)
 parser.add_argument('-batch-size', type=int, default=100)
-parser.add_argument('-embed-dim', type=int, default=100)
+parser.add_argument('-emb-dim', type=int, default=100)
 parser.add_argument('-using-hs', action='store_true', default=False)
 
 parser.add_argument('-dir', type=str, default='./data')
@@ -21,7 +22,7 @@ args = parser.parse_args()
 
 # data
 data = InputData('zhihu.txt', args)
-output_file_name = 'result.txt'
+args.output_file_name = 'result.txt'
 
 # update args
 args.emb_size = len(data.word2id)
@@ -29,6 +30,7 @@ args.emb_size = len(data.word2id)
 # do
 skip_gram_model = SkipGramModel(args)
 mytrain.train(data, skip_gram_model, args)
+
 
 
 
