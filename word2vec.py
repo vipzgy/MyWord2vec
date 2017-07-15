@@ -22,7 +22,7 @@ args = parser.parse_args()
 
 # data
 data = InputData('zhihu.txt', args)
-args.output_file_name = 'result.txt'
+args.output_file_name = 'result2.txt'
 
 # update args
 args.emb_size = len(data.word2id)

@@ -2,10 +2,11 @@
 from tqdm import tqdm
 import torch.optim as optim
 
+
 def train(data, model, args):
     optimizer = optim.SGD(model.parameters(), lr=args.lr)
 
-    pair_count = data.evaluate_pair_count(args.window_size)
+    pair_count = data.evaluate_pair_count() # 4264098
     batch_count = args.epochs * pair_count / args.batch_size
     process_bar = tqdm(range(int(batch_count)))
     model.save_embedding(data.id2word, 'begin_embedding.txt')
@@ -25,9 +26,7 @@ def train(data, model, args):
         loss.backward()
         optimizer.step()
 
-        process_bar.set_description(
-            "Loss: %0.8f, lr: %0.6f" %
-            (loss.data[0], optimizer.param_groups[0]['lr']))
+        process_bar.set_description("Loss: %0.8f, lr: %0.6f" % (loss.data[0], optimizer.param_groups[0]['lr']))
 
         if i * args.batch_size % 100000 == 0:
             lr = args.lr * (1.0 - 1.0 * i / batch_count)

@@ -23,18 +23,20 @@ class SkipGramModel(nn.Module):
         self.v_embedding.weight.data.uniform_(-0, 0)
 
     def forward(self, pos_u, pos_v, neg_u, neg_v):
+        # 这里写的真心很赞
         loss = []
+
         emb_u = self.u_embedding(Variable(torch.LongTensor(pos_u)))
         emb_v = self.v_embedding(Variable(torch.LongTensor(pos_v)))
         score = torch.mul(emb_u, emb_v)
-        score = torch.sum(score, dim=1)
+        score = torch.sum(score, 1)
         score = F.logsigmoid(score)
         loss.append(sum(score))
 
         neg_emb_u = self.u_embedding(Variable(torch.LongTensor(neg_u)))
         neg_emb_v = self.v_embedding(Variable(torch.from_numpy(numpy.array(neg_v)).type(torch.LongTensor)))
         neg_score = torch.mul(neg_emb_u, neg_emb_v)
-        neg_score = torch.sum(neg_score, dim=1)
+        neg_score = torch.sum(neg_score, 1)
         neg_score = F.logsigmoid(-1 * neg_score)
         loss.append(sum(neg_score))
 

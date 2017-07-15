@@ -2,6 +2,7 @@
 import os
 import numpy
 from collections import deque
+from huffman import HuffmanTree
 
 numpy.random.seed(12345)
 
@@ -31,9 +32,9 @@ class InputData:
         self.init_sample_table()
 
         if args.using_hs:
-            pass
-            # tree = HuffmanTree(self.word_frequency)
-            # self.huffman_positive, self.huffman_negative = tree.get_huffman_code_and_path()
+            tree = HuffmanTree(self.word_frequency)
+            self.huffman_positive, self.huffman_negative = tree.get_huffman_code_and_path()
+
         print('Word Count: %d' % len(self.word2id))
         print('Sentence Length: %d' % (self.sentence_length))
         print('Sentence count: %d' % (self.sentence_count))
@@ -75,7 +76,7 @@ class InputData:
 # vip ???这里的采样，是把窗口里的所有情况都采咯
     def get_batch_pairs(self):
         while len(self.word_pair_catch) < self.args.batch_size:
-            print('实际上一次采样就足够一次epoch，看看输出了几次???')
+            # print('实际上一次采样就足够一次epoch，看看输出了几次???')
             for sentence in self.input_file:
                 if sentence is None or sentence == '':
                     continue
@@ -87,13 +88,13 @@ class InputData:
                         continue
                 for i, u in enumerate(word_ids):
                     for j, v in enumerate(word_ids[
-                                max(i - self.args.window_size, 0): min(
-                                (i + self.args.window_size), len(word_ids))]):
+                                max(i - self.args.window_size, 0): min((i + self.args.window_size), len(word_ids))]):
                         assert u < self.word_count
                         assert v < self.word_count
                         if i == j:
                             continue
                         self.word_pair_catch.append((u, v))
+        # print(len(self.word_pair_catch))# 一共4746078
         batch_pairs = []
         for _ in range(self.args.batch_size):
             batch_pairs.append(self.word_pair_catch.popleft())
@@ -108,10 +109,9 @@ class InputData:
             neg_word_pair += zip([pair[0]] * self.args.neg_count, neg_v)
         return pos_word_pair, neg_word_pair
 
-# doubt
-    def evaluate_pair_count(self, window_size):
-        return self.sentence_length * (2 * window_size - 1) - (self.sentence_count - 1) * (
-        1 + window_size) * window_size
+# doubt???
+    def evaluate_pair_count(self):
+        return self.sentence_length * (2 * self.args.window_size - 1) - (self.sentence_count - 1) * (1 + self.args.window_size) * self.args.window_size
 
 
 
